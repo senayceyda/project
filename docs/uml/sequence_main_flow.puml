@@ -1,0 +1,38 @@
+@startuml
+title Main System Workflow
+
+actor User
+
+participant DataLoader
+participant SensorHashMap
+participant SensorGraph
+participant AQICalculator
+participant HotspotDetector
+participant HotspotTracker
+participant AlertManager
+participant AlertQueue
+
+User -> DataLoader : loadJSON("input_sample.json")
+
+loop For each sensor record
+    DataLoader -> SensorGraph : addSensor(sensorId)
+    DataLoader -> SensorHashMap : insert(sensorId, SensorNode)
+end
+
+loop For each sensor reading
+    SensorHashMap -> AQICalculator : calculate(pm25, pm10)
+    AQICalculator --> SensorHashMap : aqiValue
+end
+
+SensorGraph -> HotspotDetector : detectHotspots()
+HotspotDetector --> HotspotTracker : hotspotList
+HotspotTracker -> HotspotTracker : update(hotspotList)
+
+loop For each detected hotspot
+    HotspotTracker -> AlertManager : generateAlert(sensorId, aqi)
+    AlertManager -> AlertQueue : push(Alert)
+end
+
+AlertManager -> AlertQueue : dispatchAlerts()
+
+@enduml

@@ -1,0 +1,130 @@
+@startuml
+skinparam classAttributeIconSize 0
+title Project Class Diagram
+
+class DataLoader {
+    +loadJSON(path : string) : void
+    +loadCSV(path : string) : void
+}
+
+class SensorGraph {
+    -head : SensorNode*
+    -count : int
+    --
+    +SensorGraph()
+    +~SensorGraph()
+    +addSensor(id : string, x : double, y : double, population : int) : SensorNode*
+    +addEdge(a : SensorNode*, b : SensorNode*) : void
+    +dfs(start : SensorNode*) : void
+    +bfs(start : SensorNode*) : void
+    +dfsPrint(start : SensorNode*) : void
+    +resetVisited() : void
+    +getHead() : SensorNode*
+    +getSensorCount() : int
+}
+
+class SensorNode {
+    +id : string
+    +x : double
+    +y : double
+    +population : int
+    +visited : bool
+    +adjList : AdjNode*
+    +next : SensorNode*
+}
+
+class AdjNode {
+    +neighbor : SensorNode*
+    +next : AdjNode*
+}
+
+class SensorHashMap {
+    -buckets : HashNode**
+    -tableSize : int
+    --
+    +SensorHashMap(size : int)
+    +~SensorHashMap()
+    +insert(key : string, value : SensorNode*) : void
+    +get(key : string) : SensorNode*
+}
+
+class HashNode {
+    +key : string
+    +value : SensorNode*
+    +next : HashNode*
+}
+
+class AQICalculator {
+    +calculate(pm25 : float, pm10 : float) : int
+}
+
+class HotspotDetector {
+    +detectHotspots(graph : SensorGraph) : List<int>
+}
+
+class HotspotTracker {
+    -activeHotspots : List<int>
+    --
+    +update(hotspots : List<int>) : void
+    +getTracked() : List<int>
+}
+
+class AlertManager {
+    -alertQueue : AlertQueue
+    --
+    +generateAlert(sensorId : int, aqi : int) : void
+    +dispatchAlerts() : void
+}
+
+class AlertQueue {
+    -queue : PriorityQueue<Alert>
+    --
+    +push(alert : Alert) : void
+    +pop() : Alert
+    +isEmpty() : bool
+}
+
+class Alert {
+    +sensorId : int
+    +aqi : int
+    +priority : int
+}
+
+class TimeSeries {
+    -values : List<float>
+    -timestamps : List<long>
+    --
+    +addValue(value : float, time : long) : void
+    +getAverage() : float
+    +getLatest() : float
+}
+
+class SpatialUtils {
+    +calculateDistance(x1 : float, y1 : float, x2 : float, y2 : float) : float
+}
+
+class TimeUtils {
+    +getCurrentTimestamp() : long
+    +formatTime(timestamp : long) : string
+}
+
+' ---------------- RELATIONSHIPS ----------------
+
+SensorGraph *-- SensorNode : owns
+SensorNode *-- AdjNode : adjacency
+
+SensorHashMap *-- HashNode : buckets
+SensorHashMap ..> SensorNode : references
+
+DataLoader --> SensorGraph
+DataLoader --> SensorHashMap
+
+HotspotDetector --> SensorGraph
+HotspotTracker --> HotspotDetector
+
+AlertManager *-- AlertQueue
+AlertQueue o-- Alert
+
+AlertManager --> AQICalculator
+
+@enduml
